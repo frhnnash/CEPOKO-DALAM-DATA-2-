@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CEPOKO DALAM DATA</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  /* ====== Gaya dasar (ubah warna di sini) ====== */
+  :root{--navy:#0f2a4a;--navy2:#1c3f6e;--sky:#dbeafe;--bg:#f1f5f9;--ink:#0f172a}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+  .card{background:#fff;border-radius:1rem;padding:1rem;box-shadow:0 1px 3px rgba(15,42,74,.08)}
+  .nav{display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;border-radius:.7rem;color:#dbeafe;white-space:nowrap;text-align:left}
+  .nav:hover{background:rgba(255,255,255,.08)} .nav.on{background:var(--navy2);color:#fff;font-weight:600}
+  .btn{background:var(--navy);color:#fff;padding:.5rem 1rem;border-radius:.7rem;font-weight:600}
+  .btn:hover{background:var(--navy2)} .btn2{background:var(--sky);color:var(--navy);padding:.4rem .8rem;border-radius:.6rem;font-weight:600}
+  .inp{border:1px solid #cbd5e1;border-radius:.7rem;padding:.5rem .75rem;background:#fff;width:100%}
+  .inp:focus,.btn:focus-visible,.nav:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+  .view{display:none}.view.on{display:block}
+  table{width:100%;font-size:.85rem}th,td{padding:.35rem .5rem;text-align:left;border-bottom:1px solid #e2e8f0}
+  .chip{display:inline-block;padding:.15rem .6rem;border-radius:99px;font-size:.75rem;background:var(--sky);color:var(--navy)}
+  .src{font-size:.75rem;color:#64748b}.src a{color:#2563eb;text-decoration:underline}
+  .opt{display:block;width:100%;text-align:left;border:1px solid #cbd5e1;border-radius:.7rem;padding:.6rem .8rem;margin-top:.4rem;background:#fff}
+  .opt:hover{background:#eff6ff}.ok{background:#dcfce7!important;border-color:#16a34a}.bad{background:#fee2e2!important;border-color:#dc2626}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="flex flex-col lg:flex-row min-h-screen">
+
+<!-- ====== SIDEBAR ====== -->
+<aside class="text-white lg:w-64 lg:min-h-screen p-3 lg:p-4 lg:sticky lg:top-0 lg:h-screen" style="background:var(--navy)">
+  <div class="px-2 pb-2 lg:pb-4">
+    <div class="text-xl font-extrabold leading-tight">CEPOKO<br class="hidden lg:block"> DALAM DATA</div>
+    <p class="hidden lg:block text-sm text-blue-200 mt-2">Jangan terpukau angka. Periksa konteksnya, lalu simpulkan sesuai bukti.</p>
+  </div>
+  <nav class="flex lg:flex-col gap-1 overflow-x-auto" id="nav">
+    <button class="nav on" data-v="home">🏠 Beranda</button>
+    <button class="nav" data-v="explorer">📊 Data Explorer</button>
+    <button class="nav" data-v="compare">⚖️ Perbandingan</button>
+    <button class="nav" data-v="story">💡 Cerita di Balik Angka</button>
+    <button class="nav" data-v="learn">📖 Belajar Cepat</button>
+    <button class="nav" data-v="quiz">🎮 Kuis: Percaya atau Periksa?</button>
+    <button class="nav" data-v="fact">🛡️ Cek Klaim dengan Data</button>
+    <button class="nav" data-v="gloss">📚 Kamus Data</button>
+  </nav>
+  <p class="hidden lg:block text-xs text-blue-200 mt-6 px-2 italic">“Data bukan sekadar angka, tapi cerita tentang dunia kita.”</p>
+</aside>
+
+<main class="flex-1 p-3 md:p-6 min-w-0">
+  <div id="status" class="card mb-4 text-sm">⏳ Mengambil data terbaru dari World Bank API…</div>
+
+  <!-- ====== BERANDA ====== -->
+  <section id="v-home" class="view on space-y-5">
+    <div class="rounded-2xl p-5 md:p-8 flex flex-col md:flex-row items-center gap-4" style="background:linear-gradient(120deg,#dbeafe,#e0f2fe)">
+      <div class="flex-1">
+        <p class="text-sky-700">Selamat datang di</p>
+        <h1 class="text-3xl md:text-4xl font-extrabold" style="color:var(--navy)">CEPOKO DALAM DATA</h1>
+        <p class="mt-2 max-w-md">Jangan langsung percaya pada angka yang terlihat meyakinkan. Periksa konteksnya, lalu simpulkan sesuai bukti. Semua angka diambil langsung dari sumber resmi.</p>
+        <button class="btn mt-4" onclick="go('explorer')">Mulai Jelajahi →</button>
+      </div>
+      <!-- Ilustrasi pelajar (SVG sederhana) -->
+      <svg viewBox="0 0 260 190" class="w-64 shrink-0" role="img" aria-label="Pelajar memegang kaca pembesar di depan grafik">
+        <rect x="150" y="30" width="18" height="40" fill="#93c5fd"/><rect x="175" y="15" width="18" height="55" fill="#60a5fa"/><rect x="200" y="45" width="18" height="25" fill="#3b82f6"/>
+        <circle cx="205" cy="105" r="30" fill="#60a5fa"/><path d="M185 105q20-25 40 0" fill="#34d399"/>
+        <path d="M40 190q5-60 50-60t50 60z" fill="#1e3a8a"/><circle cx="90" cy="95" r="28" fill="#fcd9b6"/>
+        <path d="M62 92q5-35 40-30 20 3 16 30-15-14-56 0z" fill="#1f2937"/><circle cx="80" cy="98" r="3" fill="#1f2937"/><circle cx="102" cy="98" r="3" fill="#1f2937"/>
+        <circle cx="140" cy="120" r="26" fill="#bfdbfe" fill-opacity=".6" stroke="#1e3a8a" stroke-width="5"/><path d="M122 140l-22 30" stroke="#1e3a8a" stroke-width="7" stroke-linecap="round"/>
+        <path d="M128 125l8-8 8 6 8-10" stroke="#2563eb" stroke-width="3" fill="none"/>
+      </svg>
+    </div>
+    <div id="kpis" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
+    <div class="card"><h2 class="font-bold text-lg">4 pertanyaan sebelum mempercayai angka</h2><ul class="grid sm:grid-cols-2 gap-2 mt-2 text-sm"><li class="bg-blue-50 rounded-lg p-2">Naik 100% dari berapa menjadi berapa?</li><li class="bg-blue-50 rounded-lg p-2">97% setuju: berapa orang yang ditanya, dan bagaimana dipilih?</li><li class="bg-blue-50 rounded-lg p-2">Grafik ini menunjukkan perubahan nyata, atau hanya tampak dramatis?</li><li class="bg-blue-50 rounded-lg p-2">Apakah sumber dan metode mendukung klaimnya?</li></ul></div>
+    <h2 class="font-bold text-lg">Jelajahi Topik Data</h2>
+    <div id="topics" class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3"></div>
+    <h2 class="font-bold text-lg">Sorotan Data Terbaru</h2>
+    <div class="grid lg:grid-cols-2 gap-4">
+      <div class="card"><h3 class="font-semibold">Seberapa banyak penduduk Indonesia memakai internet?</h3><p class="src">Persentase penduduk · Indonesia vs dunia</p><div class="h-64"><canvas id="c-h1"></canvas></div><p id="i-h1" class="text-sm mt-2 bg-slate-50 rounded-lg p-2"></p><p id="s-h1" class="src mt-1"></p></div>
+      <div class="card"><h3 class="font-semibold">Berapa lama harapan hidup di Asia Tenggara dan sekitarnya?</h3><p class="src">Nilai terbaru yang tersedia per negara (tahun tercantum di tooltip)</p><div class="h-64"><canvas id="c-h2"></canvas></div><p id="i-h2" class="text-sm mt-2 bg-slate-50 rounded-lg p-2"></p><p id="s-h2" class="src mt-1"></p></div>
+    </div>
+  </section>
+
+  <!-- ====== DATA EXPLORER ====== -->
+  <section id="v-explorer" class="view space-y-4">
+    <h2 class="text-2xl font-bold">Data Explorer</h2>
+    <div class="grid md:grid-cols-3 gap-3">
+      <input id="ex-q" class="inp" placeholder="🔍 Cari indikator atau kata kunci…">
+      <select id="ex-t" class="inp"></select>
+      <select id="ex-c" class="inp"></select>
+    </div>
+    <div class="grid lg:grid-cols-3 gap-4">
+      <div class="card max-h-[28rem] overflow-y-auto" id="ex-list"></div>
+      <div class="card lg:col-span-2" id="ex-detail"></div>
+    </div>
+  </section>
+
+  <!-- ====== PERBANDINGAN ====== -->
+  <section id="v-compare" class="view space-y-4">
+    <h2 class="text-2xl font-bold">Perbandingan Data</h2>
+    <div class="card grid md:grid-cols-4 gap-3">
+      <label class="md:col-span-2 text-sm">Indikator<select id="cp-i" class="inp"></select></label>
+      <label class="text-sm">Dari tahun<input id="cp-a" type="number" class="inp" value="2000"></label>
+      <label class="text-sm">Sampai tahun<input id="cp-b" type="number" class="inp" value="2023"></label>
+      <div id="cp-c" class="md:col-span-4 flex flex-wrap gap-3 text-sm"></div>
+    </div>
+    <div class="card"><div class="h-80"><canvas id="c-cp"></canvas></div><div id="cp-t" class="overflow-x-auto mt-3"></div><p id="cp-s" class="src mt-2"></p></div>
+  </section>
+
+  <!-- ====== CERITA ====== -->
+  <section id="v-story" class="view space-y-4"><h2 class="text-2xl font-bold">Cerita di Balik Angka</h2><div id="stories" class="space-y-4"></div></section>
+
+  <!-- ====== BELAJAR ====== -->
+  <section id="v-learn" class="view space-y-4">
+    <h2 class="text-2xl font-bold">Belajar Cepat</h2>
+    <p>Alur membaca setiap grafik: <b>Amati → Interpretasikan → Verifikasi → Evaluasi → Simpulkan</b>.</p>
+    <div id="lessons" class="space-y-3"></div>
+    <div class="card"><h3 class="font-semibold">Demo: sumbu Y dapat menyesatkan</h3>
+      <p class="text-sm">Data yang sama (harapan hidup Indonesia). Bandingkan kesan perubahannya.</p>
+      <label class="text-sm"><input type="checkbox" id="zero" checked> Sumbu Y mulai dari 0</label>
+      <div class="h-60"><canvas id="c-demo"></canvas></div><p id="demo-t" class="text-sm bg-slate-50 rounded-lg p-2"></p></div>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="card space-y-2"><h3 class="font-semibold">Naik berapa persen, dari berapa?</h3><div class="grid grid-cols-2 gap-2"><label class="text-sm">Nilai awal<input id="pa" type="number" class="inp" value="1"></label><label class="text-sm">Nilai akhir<input id="pb" type="number" class="inp" value="2"></label></div><p id="pr" class="text-sm bg-slate-50 rounded-lg p-2"></p></div>
+      <div class="card space-y-2"><h3 class="font-semibold">Seberapa pasti hasil survei?</h3><div class="grid grid-cols-2 gap-2"><label class="text-sm">Responden<input id="sn" type="number" class="inp" value="10"></label><label class="text-sm">% setuju<input id="sp" type="number" class="inp" value="97"></label></div><p id="sr" class="text-sm bg-slate-50 rounded-lg p-2"></p></div>
+    </div>
+  </section>
+
+  <!-- ====== KUIS ====== -->
+  <section id="v-quiz" class="view space-y-4"><h2 class="text-2xl font-bold">Kuis: Percaya atau Periksa?</h2><div id="quiz" class="card"></div></section>
+
+  <!-- ====== CEK FAKTA ====== -->
+  <section id="v-fact" class="view space-y-4">
+    <h2 class="text-2xl font-bold">Cek Klaim dengan Data</h2>
+    <div class="card space-y-3">
+      <p class="text-sm">Susun klaim, lalu bandingkan dengan data. Jika data tidak ada atau klaim menyebut sebab-akibat, hasilnya “belum cukup bukti”. Kami tidak menyebut klaim “palsu” hanya karena konteksnya belum lengkap.</p>
+      <div class="grid md:grid-cols-3 gap-3">
+        <select id="f-i" class="inp"></select><select id="f-c" class="inp"></select>
+        <select id="f-k" class="inp"><option value="gt">lebih tinggi dari</option><option value="lt">lebih rendah dari</option><option value="up">naik sejak tahun</option><option value="down">turun sejak tahun</option></select>
+        <input id="f-y" type="number" class="inp" value="2015" placeholder="Tahun acuan">
+        <input id="f-v" type="number" class="inp" placeholder="Nilai (untuk lebih tinggi/rendah)">
+        <label class="text-sm flex items-center gap-2"><input type="checkbox" id="f-s"> Klaim menyebut penyebab</label>
+      </div>
+      <p id="f-p" class="font-medium"></p><button class="btn" id="f-go">Cek Sekarang →</button>
+      <div id="f-chk" class="grid md:grid-cols-2 gap-1 text-sm"></div><p id="f-n" class="text-sm font-medium"></p><div id="f-r"></div>
+    </div>
+  </section>
+
+  <!-- ====== KAMUS ====== -->
+  <section id="v-gloss" class="view space-y-4"><h2 class="text-2xl font-bold">Kamus Data</h2><input id="g-q" class="inp" placeholder="🔍 Cari istilah…"><div id="g-l" class="grid md:grid-cols-2 gap-3"></div></section>
+
+  <footer class="src mt-8 pb-4">Sumber data: World Bank, World Development Indicators (CC BY 4.0) — <a href="https://data.worldbank.org" target="_blank" rel="noopener">data.worldbank.org</a>. Data diambil langsung dari API saat halaman dibuka; tidak ada angka yang ditanam atau dikarang.</footer>
+</main>
+</div>
+
+<script>
+/* =========================================================
+   CEPOKO DALAM DATA — logika dashboard (JavaScript murni)
+   Bagian: 1) Konfigurasi  2) Pengambilan data  3) Helper
+           4) Halaman-halaman  5) Navigasi & mulai
+   ========================================================= */
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+
+/* ---------- 1) KONFIGURASI: tambah indikator/negara cukup dengan menambah baris ---------- */
+const CT  = {IDN:'Indonesia',MYS:'Malaysia',THA:'Thailand',VNM:'Vietnam',PHL:'Filipina',IND:'India',WLD:'Dunia'};
+const COL = {IDN:'#0072B2',MYS:'#E69F00',THA:'#009E73',VNM:'#D55E00',PHL:'#CC79A7',IND:'#56B4E9',WLD:'#555555'}; // palet ramah buta warna
+// [kode World Bank, nama, satuan, topik, definisi singkat]
+const IN = [
+ ['EN.ATM.CO2E.PC','Emisi CO₂ per kapita','ton/orang','Lingkungan','Emisi karbon dioksida dari pembakaran bahan bakar fosil dan produksi semen, dibagi jumlah penduduk.'],
+ ['EG.FEC.RNEW.ZS','Energi terbarukan','% konsumsi energi akhir','Lingkungan','Porsi energi terbarukan dalam total konsumsi energi akhir.'],
+ ['AG.LND.FRST.ZS','Luas hutan','% luas lahan','Lingkungan','Lahan berhutan (pohon ≥5 m) sebagai persentase luas daratan.'],
+ ['SE.ADT.LITR.ZS','Literasi dewasa','% usia 15+','Pendidikan','Persentase penduduk usia 15 tahun ke atas yang dapat membaca dan menulis kalimat sederhana.'],
+ ['SE.SEC.ENRR','Partisipasi kasar sekolah menengah','% (bisa >100)','Pendidikan','Siswa terdaftar di jenjang menengah dibanding penduduk usia resmi jenjang itu. Bisa melebihi 100% karena siswa di luar usia resmi.'],
+ ['NY.GDP.PCAP.CD','PDB per kapita','US$ berjalan','Ekonomi','Nilai total produksi ekonomi dibagi jumlah penduduk, dalam dolar AS harga berjalan.'],
+ ['FP.CPI.TOTL.ZG','Inflasi (harga konsumen)','% per tahun','Ekonomi','Perubahan tahunan indeks harga konsumen.'],
+ ['SL.UEM.TOTL.ZS','Pengangguran','% angkatan kerja','Ekonomi','Angkatan kerja yang tidak bekerja tetapi mencari kerja (estimasi ILO).'],
+ ['SP.DYN.LE00.IN','Harapan hidup saat lahir','tahun','Kesehatan','Rata-rata lama hidup bayi baru lahir jika pola kematian saat ini bertahan.'],
+ ['SH.DYN.MORT','Kematian balita','per 1.000 kelahiran hidup','Kesehatan','Peluang bayi meninggal sebelum usia 5 tahun, per 1.000 kelahiran hidup.'],
+ ['IT.NET.USER.ZS','Pengguna internet','% penduduk','Teknologi & Produk','Persentase penduduk yang menggunakan internet dalam 3 bulan terakhir.'],
+ ['IT.CEL.SETS.P2','Langganan telepon seluler','per 100 orang','Teknologi & Produk','Jumlah langganan seluler per 100 penduduk. Bisa >100 karena satu orang dapat punya beberapa kartu.'],
+ ['SP.POP.TOTL','Jumlah penduduk','jiwa','Demografi','Perkiraan penduduk pertengahan tahun, semua penduduk tanpa memandang status hukum.'],
+ ['SP.URB.TOTL.IN.ZS','Penduduk perkotaan','% total penduduk','Demografi','Persentase penduduk yang tinggal di wilayah perkotaan menurut definisi tiap negara (definisi bisa berbeda antarnegara).'],
+ ['VC.IHR.PSRC.P5','Pembunuhan sengaja','per 100.000 penduduk','Keamanan & Sosial','Kasus pembunuhan sengaja yang tercatat per 100.000 penduduk (sumber UNODC; berdasarkan data yang dilaporkan, sehingga pencatatan antarnegara bisa berbeda).'],
+ ['SP.POP.65UP.TO.ZS','Penduduk usia 65+','% total penduduk','Demografi','Persentase penduduk berusia 65 tahun ke atas.']
+].map(a => ({c:a[0],n:a[1],u:a[2],t:a[3],d:a[4]}));
+const TOPICS = {'Keamanan & Sosial':'🛡️','Lingkungan':'🌿','Pendidikan':'🎓','Ekonomi':'🪙','Kesehatan':'❤️','Teknologi & Produk':'📱','Demografi':'👥'};
+const byC = c => IN.find(i => i.c === c);
+
+/* ---------- 2) PENGAMBILAN DATA dari World Bank API ---------- */
+const DATA = {};            // DATA[kodeIndikator][kodeNegara][tahun] = nilai
+let loaded = 0;
+async function loadOne(i){
+  const url = `https://api.worldbank.org/v2/country/${Object.keys(CT).join(';')}/indicator/${i.c}?format=json&per_page=6000&date=1990:2025`;
+  const j = await (await fetch(url)).json();
+  const d = {};
+  (j[1] || []).forEach(r => { if (r.value !== null) (d[r.countryiso3code] ||= {})[r.date] = r.value; });
+  DATA[i.c] = d; loaded++;
+}
+async function loadAll(){
+  await Promise.allSettled(IN.map(loadOne));
+  const st = $('#status');
+  if (!loaded){ st.innerHTML = '⚠️ Data tidak dapat dimuat (periksa koneksi internet atau pembatasan akses). Tidak ada data palsu yang ditampilkan — muat ulang halaman setelah online.'; return false; }
+  st.innerHTML = `✅ ${loaded} dari ${IN.length} indikator dimuat dari World Bank API pada ${new Date().toLocaleDateString('id-ID',{dateStyle:'long'})}.`;
+  return true;
+}
+
+/* ---------- 3) HELPER ---------- */
+const fmt = (v,d=1) => v==null ? '–' : v.toLocaleString('id-ID',{maximumFractionDigits:Math.abs(v)>=1000?0:d});
+const ser = (c,iso) => Object.entries(DATA[c]?.[iso] || {}).map(([y,v]) => [+y,v]).sort((a,b)=>a[0]-b[0]); // deret [tahun,nilai]
+const last = (c,iso) => ser(c,iso).at(-1);
+const ok = c => DATA[c] && Object.keys(DATA[c]).length;
+const src = c => { const s = ser(c,'IDN'); return `Sumber: World Bank — World Development Indicators, indikator <a target="_blank" rel="noopener" href="https://data.worldbank.org/indicator/${c}">${c}</a>${s.length ? ` · data Indonesia ${s[0][0]}–${s.at(-1)[0]}` : ''}. Estimasi lembaga; data terbaru bisa direvisi.`; };
+// Insight otomatis dihitung dari data aktual
+function insight(c,iso){
+  const s = ser(c,iso); if (s.length < 2) return 'Data belum cukup untuk menghitung perubahan.';
+  const [f,l] = [s[0],s.at(-1)], u = byC(c).u, d = l[1]-f[1];
+  return `${byC(c).n} ${CT[iso]}: ${fmt(f[1])} (${f[0]}) → ${fmt(l[1])} (${l[0]}) ${u}. Perubahan ${d>=0?'+':''}${fmt(d)} (${f[1]?fmt(d/Math.abs(f[1])*100,0):'–'}%).`;
+}
+function commonYear(c,isos){ // tahun terbaru yang tersedia untuk semua negara
+  for (let y=2025;y>=1990;y--) if (isos.every(i => DATA[c]?.[i]?.[y]!=null)) return y; return null;
+}
+const charts = {};
+function chart(id,cfg){
+  charts[id]?.destroy();
+  cfg.options = Object.assign({responsive:true,maintainAspectRatio:false,animation:{duration:900}},cfg.options||{});
+  charts[id] = new Chart($('#'+id),cfg);
+}
+function lineCfg(c,isos,a,b,zero=false,u=byC(c).u){
+  const yrs = []; for (let y=a;y<=b;y++) yrs.push(y);
+  return {type:'line',data:{labels:yrs,datasets:isos.map(i => ({label:CT[i],borderColor:COL[i],backgroundColor:COL[i],data:yrs.map(y=>DATA[c]?.[i]?.[y]??null),spanGaps:true,pointRadius:2,tension:.25,borderWidth:i==='IDN'?3:2}))},
+    options:{scales:{y:{beginAtZero:zero,title:{display:true,text:u}}},plugins:{legend:{position:'bottom'}}}};
+}
+// Perubahan: selalu tampilkan selisih absolut; persen relatif hanya untuk satuan non-persen
+const chg = (f,l,u) => { const d=l-f; return `${d>=0?'+':''}${fmt(d,2)} ${u.includes('%')?'poin persentase':u}` + (u.includes('%')||!f ? '' : ` (${fmt(d/Math.abs(f)*100,0)}% relatif)`); };
+// Kartu Konteks: definisi, sumber, cakupan, periode, keterbatasan
+const ctx = c => { const i=byC(c), s=ser(c,'IDN'); return `<div class="bg-slate-50 rounded-lg p-3 text-sm mt-3"><b>Kartu Konteks</b><ul class="list-disc ml-5"><li>Definisi: ${i.d}</li><li>Satuan: ${i.u}</li><li>Lembaga: World Bank (WDI), dikompilasi dari sumber nasional/internasional; metode lengkap di <a class="text-blue-600 underline" target="_blank" rel="noopener" href="https://data.worldbank.org/indicator/${c}">halaman indikator</a></li><li>Cakupan: ${Object.values(CT).join(', ')}; definisi bisa berbeda antarnegara</li><li>Periode data Indonesia: ${s.length?`${s[0][0]}–${s.at(-1)[0]} (${s.length} tahun tersedia)`:'tidak tersedia'}</li><li>Diakses: ${new Date().toLocaleDateString('id-ID',{dateStyle:'long'})} (API langsung)</li><li>Keterbatasan: estimasi dan dapat direvisi; tahun kosong bukan nol; data agregat nasional.</li></ul></div>`; };
+function dl(c,iso){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['tahun,nilai\n'+ser(c,iso).map(x=>x.join(',')).join('\n')],{type:'text/csv'})); a.download=`${c}_${iso}.csv`; a.click(); }
+const opts = (arr,f) => arr.map(f).join('');
+
+/* ---------- 4) HALAMAN ---------- */
+function renderHome(){
+  // KPI: nilai terbaru Indonesia
+  const ks = ['SP.POP.TOTL','IT.NET.USER.ZS','SP.DYN.LE00.IN','FP.CPI.TOTL.ZG'].filter(ok);
+  $('#kpis').innerHTML = ks.map(c => { const l = last(c,'IDN'); return l ? `<div class="card"><p class="text-xs text-slate-500">${byC(c).n} · Indonesia (${l[0]})</p><p class="text-2xl font-extrabold" style="color:var(--navy)">${c==='SP.POP.TOTL'?fmt(l[1]/1e6)+' juta':fmt(l[1])}</p><p class="src">${c==='SP.POP.TOTL'?'jiwa':byC(c).u}</p></div>` : ''; }).join('');
+  $('#topics').innerHTML = Object.entries(TOPICS).map(([t,e]) => `<button class="card text-left hover:shadow-md" onclick="openTopic('${t}')"><div class="text-3xl">${e}</div><b>${t}</b><p class="src">${IN.filter(i=>i.t===t).length} indikator</p></button>`).join('');
+  if (ok('IT.NET.USER.ZS')){
+    chart('c-h1', lineCfg('IT.NET.USER.ZS',['IDN','WLD'],2000,2025));
+    $('#i-h1').textContent = insight('IT.NET.USER.ZS','IDN'); $('#s-h1').innerHTML = src('IT.NET.USER.ZS');
+  }
+  if (ok('SP.DYN.LE00.IN')){
+    const isos = Object.keys(CT).filter(i=>i!=='WLD'), vals = isos.map(i=>last('SP.DYN.LE00.IN',i));
+    chart('c-h2',{type:'bar',data:{labels:isos.map(i=>CT[i]),datasets:[{label:'Tahun',data:vals.map(v=>v?.[1]),backgroundColor:isos.map(i=>COL[i])}]},
+      options:{plugins:{legend:{display:false},tooltip:{callbacks:{afterLabel:x=>'Tahun data: '+vals[x.dataIndex]?.[0]}}},scales:{y:{beginAtZero:true,title:{display:true,text:'tahun'}}}}});
+    const top = isos.map((i,k)=>[i,vals[k]]).filter(x=>x[1]).sort((a,b)=>b[1][1]-a[1][1])[0];
+    $('#i-h2').textContent = `Tertinggi di antara negara yang ditampilkan: ${CT[top[0]]} (${fmt(top[1][1])} tahun, data ${top[1][0]}). Tahun data tiap negara bisa berbeda.`; $('#s-h2').innerHTML = src('SP.DYN.LE00.IN');
+  }
+}
+function openTopic(t){ go('explorer'); $('#ex-t').value = t; renderList(); }
+
+/* Data Explorer */
+let curInd = IN[0].c;
+function initExplorer(){
+  $('#ex-t').innerHTML = '<option value="">Semua topik</option>' + opts(Object.keys(TOPICS), t=>`<option>${t}</option>`);
+  $('#ex-c').innerHTML = opts(Object.keys(CT), k=>`<option value="${k}">${CT[k]}</option>`);
+  ['#ex-q','#ex-t'].forEach(s => $(s).addEventListener('input',renderList));
+  $('#ex-c').addEventListener('input',renderDetail);
+}
+function renderList(){
+  const q = $('#ex-q').value.toLowerCase(), t = $('#ex-t').value;
+  const l = IN.filter(i => (!t || i.t===t) && (i.n+i.d+i.t).toLowerCase().includes(q));
+  $('#ex-list').innerHTML = l.length ? l.map(i=>`<button class="opt ${i.c===curInd?'ok':''}" onclick="curInd='${i.c}';renderList();renderDetail()"><b>${i.n}</b><br><span class="chip">${i.t}</span></button>`).join('') : '<p class="text-sm">Tidak ada indikator yang cocok. Coba kata kunci lain.</p>';
+  renderDetail();
+}
+function renderDetail(){
+  const i = byC(curInd), iso = $('#ex-c').value, s = ser(i.c,iso), box = $('#ex-detail');
+  if (!s.length){ box.innerHTML = `<h3 class="font-bold">${i.n}</h3><p class="mt-2">Tidak ada data ${i.n} untuk ${CT[iso]} pada sumber ini. Data yang kosong tidak boleh ditafsirkan sebagai nol.</p><p class="src mt-2">${src(i.c)}</p>`; return; }
+  const v = s.map(x=>x[1]).sort((a,b)=>a-b), mean = v.reduce((a,b)=>a+b)/v.length, med = v.length%2 ? v[(v.length-1)/2] : (v[v.length/2-1]+v[v.length/2])/2;
+  box.innerHTML = `<h3 class="font-bold text-lg">${i.n} — ${CT[iso]}</h3><p class="text-sm">${i.d}</p>
+   <div class="h-56 mt-2"><canvas id="c-ex"></canvas></div>
+   <div class="grid grid-cols-2 md:grid-cols-5 gap-2 my-3 text-sm">${[['Terbaru',fmt(s.at(-1)[1])+` (${s.at(-1)[0]})`],['Minimum',fmt(v[0])],['Maksimum',fmt(v.at(-1))],['Rata-rata',fmt(mean)],['Median',fmt(med)]].map(x=>`<div class="bg-slate-50 rounded-lg p-2"><div class="src">${x[0]}</div><b>${x[1]}</b></div>`).join('')}</div>
+   <p class="text-sm bg-blue-50 rounded-lg p-2">💡 ${insight(i.c,iso)}</p>
+   <details class="mt-2"><summary class="cursor-pointer font-medium">Tabel data (${s.length} tahun)</summary><div class="max-h-60 overflow-y-auto"><table><tr><th>Tahun</th><th>Nilai (${i.u})</th></tr>${s.slice().reverse().map(x=>`<tr><td>${x[0]}</td><td>${fmt(x[1],2)}</td></tr>`).join('')}</table></div></details>
+   <div class="grid md:grid-cols-2 gap-2 mt-3 text-sm"><div class="bg-green-50 rounded-lg p-2"><b>Apa yang didukung data?</b><br>Nilai tiap tahun yang tersedia dan arah perubahan antartitik.</div><div class="bg-amber-50 rounded-lg p-2"><b>Apa yang belum bisa disimpulkan?</b><br>Penyebab perubahan, variasi di dalam negara, dan tahun tanpa data.</div></div>
+   ${ctx(i.c)}<button class="btn2 mt-3" onclick="dl('${i.c}','${iso}')">⬇ Unduh CSV (lisensi CC BY 4.0)</button><p class="src mt-2">${src(i.c)}</p>`;
+  chart('c-ex', lineCfg(i.c,[iso],s[0][0],s.at(-1)[0]));
+}
+
+/* Perbandingan */
+function initCompare(){
+  $('#cp-i').innerHTML = opts(IN,i=>`<option value="${i.c}">${i.t}: ${i.n}</option>`);
+  $('#cp-c').innerHTML = Object.keys(CT).map(k=>`<label><input type="checkbox" value="${k}" ${['IDN','WLD','MYS'].includes(k)?'checked':''}> ${CT[k]}</label>`).join('');
+  $('#v-compare').addEventListener('input',renderCompare);
+}
+function renderCompare(){
+  const c = $('#cp-i').value, isos = $$('#cp-c input:checked').map(x=>x.value), a = +$('#cp-a').value, b = +$('#cp-b').value;
+  if (!isos.length || a>=b){ $('#cp-t').innerHTML = '<p class="text-sm">Pilih minimal satu wilayah dan pastikan tahun awal lebih kecil dari tahun akhir.</p>'; return; }
+  chart('c-cp', lineCfg(c,isos,a,b));
+  $('#cp-t').innerHTML = `<table><tr><th>Wilayah</th><th>Data tersedia</th><th>Terbaru</th><th>Perubahan</th></tr>${isos.map(i=>{const s=ser(c,i).filter(x=>x[0]>=a&&x[0]<=b);return s.length>1?`<tr><td>${CT[i]}</td><td>${s[0][0]}–${s.at(-1)[0]}</td><td>${fmt(s.at(-1)[1])}</td><td>${fmt(s.at(-1)[1]-s[0][1])}</td></tr>`:`<tr><td>${CT[i]}</td><td colspan="3">Data tidak tersedia pada periode ini</td></tr>`}).join('')}</table>`;
+  $('#cp-s').className='text-sm mt-2'; $('#cp-s').innerHTML = src(c) + ' Periode yang dipilih memengaruhi kesan tren; coba rentang lebih panjang. Definisi bisa berbeda antarnegara.' + ctx(c);
+}
+
+/* Cerita di Balik Angka: kesan jendela pendek vs konteks lengkap, dihitung dari data aktual */
+const STORIES = [
+ {c:'VC.IHR.PSRC.P5',t:'“Angka pembunuhan berubah drastis!”',cant:'Data tercatat bukan jumlah kejadian sebenarnya; perubahan pencatatan dapat memengaruhi angka. Tidak menjelaskan penyebab.'},
+ {c:'IT.NET.USER.ZS',t:'“Pengguna internet melonjak!”',cant:'Tidak menjelaskan kualitas koneksi, kesenjangan kota–desa, atau cara internet dipakai.'},
+ {c:'FP.CPI.TOTL.ZG',t:'“Harga naik makin cepat!”',cant:'Inflasi nasional adalah rata-rata; tidak mewakili pengalaman semua rumah tangga atau harga satu barang.'},
+ {c:'SP.DYN.LE00.IN',t:'“Orang Indonesia hidup lebih lama!”',cant:'Harapan hidup adalah statistik rata-rata, bukan jaminan usia seseorang, dan tidak menunjukkan penyebab perubahan.'}];
+function renderStories(){
+  $('#stories').innerHTML = STORIES.map((x,k)=>{
+    const i=byC(x.c), sr=ser(x.c,'IDN');
+    if (sr.length<8) return `<article class="card"><h3 class="font-bold">${x.t}</h3><p class="text-sm mt-1">Data ${i.n} Indonesia hanya ${sr.length} titik pada sumber ini, terlalu sedikit untuk dibandingkan secara adil, jadi cerita tidak ditampilkan.</p><p class="src mt-1">${src(x.c)}</p></article>`;
+    const a=sr.at(-5), f=sr[0], l=sr.at(-1), vs=sr.map(r=>r[1]), mx=sr[vs.indexOf(Math.max(...vs))], mn=sr[vs.indexOf(Math.min(...vs))];
+    const dirDiff = (l[1]>a[1]) !== (l[1]>f[1]);
+    return `<article class="card"><h3 class="text-lg font-bold">${x.t}</h3><p class="src">Judul sensasional ini hanya contoh framing; periksa angkanya di bawah.</p><div class="h-52"><canvas id="c-st${k}"></canvas></div>
+     <div class="grid md:grid-cols-2 gap-2 mt-2 text-sm"><div class="bg-amber-50 rounded-lg p-2"><b>Kesan awal (5 titik data terakhir)</b><br>${fmt(a[1])} (${a[0]}) → ${fmt(l[1])} (${l[0]}) ${i.u}: ${chg(a[1],l[1],i.u)}.</div>
+     <div class="bg-blue-50 rounded-lg p-2"><b>Konteks lengkap (${f[0]}–${l[0]})</b><br>${fmt(f[1])} → ${fmt(l[1])}: ${chg(f[1],l[1],i.u)}. Tertinggi ${fmt(mx[1])} (${mx[0]}), terendah ${fmt(mn[1])} (${mn[0]}).</div></div>
+     ${dirDiff?'<p class="text-sm mt-2">⚠️ Arah perubahan berbeda tergantung titik awal. Pilihan periode pembanding mengubah kesimpulan.</p>':''}
+     <p class="text-sm mt-2">✅ <b>Apa yang didukung data?</b> Nilai pada tahun-tahun yang tercatat dan arah perubahan antartitik, seperti di atas.</p>
+     <p class="text-sm">⚠️ <b>Apa yang belum bisa disimpulkan?</b> ${x.cant}</p>
+     <p class="text-sm mt-1">✍️ <b>Versi lebih akurat:</b> “Menurut World Bank, ${i.n.toLowerCase()} Indonesia ${l[1]>f[1]?'naik':'turun'} dari ${fmt(f[1])} (${f[0]}) ke ${fmt(l[1])} (${l[0]}) ${i.u}; data tidak menjelaskan penyebabnya.”</p>${ctx(x.c)}<p class="src mt-1">${src(x.c)}</p></article>`; }).join('');
+  STORIES.forEach((x,k)=> $('#c-st'+k) && chart('c-st'+k, lineCfg(x.c,['IDN'],ser(x.c,'IDN')[0][0],2025,true)));
+}
+
+/* Belajar Cepat */
+const PATTERNS = [
+ ['Persentase tanpa angka dasar','Perubahan tampak besar padahal jumlah absolut kecil.','Naik dari berapa menjadi berapa?'],
+ ['Sampel kecil / tidak representatif','Hasil responden dianggap mewakili semua orang.','Siapa yang ditanya, berapa jumlahnya, bagaimana dipilih?'],
+ ['Skala grafik terpotong','Perbedaan kecil tampak dramatis.','Di mana sumbu dimulai?'],
+ ['Memilih periode pembanding','Tren tampak naik/turun karena titik awal yang dipilih.','Bagaimana jika rentang waktunya lebih panjang?'],
+ ['Rata-rata tanpa sebaran','Variasi dan kelompok berbeda tersembunyi.','Apa kata median, rentang, atau distribusi?'],
+ ['Korelasi dianggap sebab-akibat','Dua hal bergerak bersama dianggap saling menyebabkan.','Adakah bukti kausal dan penjelasan alternatif?'],
+ ['Angka tanpa definisi','Istilah sama dihitung dengan cara berbeda.','Apa definisi, satuan, cakupan, dan metodenya?'],
+ ['Klaim tanpa ketidakpastian','Estimasi tampak pasti padahal ada margin kesalahan.','Seberapa pasti angka ini?']];
+function calc(){
+  const a=+$('#pa').value, b=+$('#pb').value;
+  $('#pr').textContent = a ? `Dari ${fmt(a,2)} menjadi ${fmt(b,2)}: selisih absolut ${fmt(b-a,2)}, perubahan relatif ${fmt((b-a)/Math.abs(a)*100,1)}%. Laporkan keduanya.` : 'Nilai awal 0: persen tidak terdefinisi, laporkan angka absolut.';
+  const n=Math.floor(+$('#sn').value), p=+$('#sp').value; let t;
+  if (n<1||p<0||p>100) t='Isi jumlah responden ≥ 1 dan persentase 0–100.';
+  else { const k=Math.round(p*n/100), got=k/n*100, m=1.96*Math.sqrt(p/100*(1-p/100)/n)*100;
+    t = `Margin kesalahan ±${fmt(m,1)} poin (perkiraan 95%, mengandaikan sampel acak sederhana; survei nyata bisa berbeda).` + (Math.abs(got-p)>0.5 ? ` Dengan ${n} jawaban ya/tidak, persentase terdekat adalah ${fmt(got)}%, bukan ${p}%: metode (skala, pembobotan) perlu dijelaskan.` : ''); }
+  $('#sr').textContent = t;
+}
+function renderLearn(){
+  $('#lessons').innerHTML = `<div class="card overflow-x-auto"><h3 class="font-semibold mb-2">8 pola klaim yang perlu diperiksa</h3><table><tr><th>Pola</th><th>Risiko salah paham</th><th>Pertanyaan pemeriksa</th></tr>${PATTERNS.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</table></div>`;
+  $('#v-learn').oninput = calc; calc();
+  if (!ok('SP.DYN.LE00.IN')) return;
+  const draw = () => { const sr = ser('SP.DYN.LE00.IN','IDN').slice(-15), z = $('#zero').checked;
+    chart('c-demo',{type:'line',data:{labels:sr.map(x=>x[0]),datasets:[{label:'Harapan hidup Indonesia (tahun)',data:sr.map(x=>x[1]),borderColor:COL.IDN,tension:.2}]},options:{scales:{y:{beginAtZero:z}}}});
+    $('#demo-t').textContent = z ? 'Dengan sumbu dari 0, perubahan tampak landai dan sesuai skala sebenarnya.' : 'Dengan sumbu dipotong, perubahan yang sama tampak curam. Selalu cek angka pada sumbu.'; };
+  $('#zero').onchange = draw; draw();
+}
+
+/* Kuis: Percaya atau Periksa? Soal 3-4 dihitung dari data aktual */
+let Q = [], qi = 0, score = 0;
+const WBU = 'https://data.worldbank.org/indicator/';
+function buildQuiz(){
+  Q = [
+   {q:'Berita: “Kriminalitas di wilayah X naik 100%!” (contoh ilustratif: dari 1 kasus menjadi 2 kasus). Respons terbaik?',o:['Wilayah X kini sangat berbahaya','Hitungannya benar, tetapi perlu angka absolut, periode, cakupan, dan kelengkapan data','Beritanya pasti bohong'],a:1,e:'Dari 1 ke 2 memang +100%, tetapi selisihnya satu kasus. Tugas kita bukan menuduh bohong, melainkan memeriksa konteks.'},
+   {q:'Iklan: “97% pengguna setuju!” Surveinya hanya 10 responden (contoh ilustratif). Apa yang perlu diperiksa?',o:['Tidak ada, 97% sudah tinggi','Cara memilih responden, bunyi pertanyaan, tingkat respons, dan cara menghitung 97%','Hanya warna grafiknya'],a:1,e:'Dari 10 jawaban ya/tidak, persentase yang mungkin berkelipatan 10, sehingga 97% menandakan metode lain yang harus dijelaskan. Sampel kecil juga membatasi generalisasi.'}];
+  const s = ser('IT.NET.USER.ZS','IDN').filter(x=>x[0]>=2010);
+  if (s.length>1){ const f=s[0], l=s.at(-1); Q.push({q:`Pengguna internet Indonesia: ${fmt(f[1])}% (${f[0]}) dan ${fmt(l[1])}% (${l[0]}). Kesimpulan yang didukung?`,o:['Naik; internet pasti membuat hidup lebih baik','Naik sebesar '+fmt(Math.abs(l[1]-f[1]))+' poin persentase; penyebab dan dampaknya belum dapat disimpulkan','Turun'],a:l[1]>f[1]?1:2,e:`Data hanya mendukung arah dan besar perubahan. Dampak sosial memerlukan bukti lain.`,l:WBU+'IT.NET.USER.ZS'}); }
+  const isos=['IDN','MYS','THA','VNM','PHL','IND'], y=commonYear('SP.DYN.LE00.IN',isos);
+  if (y){ const v=isos.map(i=>[i,DATA['SP.DYN.LE00.IN'][i][y]]), top=v.slice().sort((a,b)=>b[1]-a[1])[0][0];
+    Q.push({q:`Harapan hidup tahun ${y}: ${v.map(x=>CT[x[0]]+' '+fmt(x[1])).join(', ')}. Negara mana tertinggi?`,o:isos.map(i=>CT[i]),a:isos.indexOf(top),e:`Tertinggi: ${CT[top]}. Perbandingan adil memakai tahun dan definisi yang sama.`,l:WBU+'SP.DYN.LE00.IN'}); }
+  Q.push({q:'Grafik batang menampilkan dua nilai (52 dan 56) dengan sumbu Y mulai dari 50, sehingga batang kedua tampak 3 kali lebih tinggi. Apa yang tepat?',o:['Nilai kedua tiga kali lebih besar','Selisih sebenarnya sekitar 8%; sumbu terpotong melebih-lebihkan kesan','Grafik pasti salah dan harus ditolak'],a:1,e:'(56−52)/52 ≈ 7,7%. Tinggi batang pada sumbu terpotong tidak mewakili nilai sebenarnya.'},
+   {q:'Penjualan es krim dan kasus tenggelam sama-sama naik di musim panas. Kesimpulan tepat?',o:['Es krim menyebabkan tenggelam','Ada faktor ketiga (cuaca panas); korelasi bukan bukti sebab-akibat','Tenggelam menyebabkan orang membeli es krim'],a:1,e:'Contoh klasik korelasi tanpa kausalitas.'},
+   {q:'Gaji 4 orang: 5, 5, 6, dan 100 juta rupiah (contoh hitungan). Mana yang lebih mewakili gaji “biasa”?',o:['Rata-rata (29 juta)','Median (5,5 juta)','Maksimum'],a:1,e:'Pencilan 100 juta menarik rata-rata; median lebih tahan.'});
+  qi = 0; score = 0; showQ();
+}
+function showQ(){
+  const b = $('#quiz');
+  if (qi>=Q.length){ b.innerHTML = `<h3 class="text-xl font-bold">Skor kamu: ${score} / ${Q.length}</h3><p class="my-2">${score===Q.length?'Luar biasa! Kamu tidak mudah terpukau angka. 🎉':score>=Q.length/2?'Bagus, terus berlatih memeriksa konteks!':'Coba buka Belajar Cepat lalu ulangi.'}</p><button class="btn" onclick="buildQuiz()">Ulangi Kuis</button>`; return; }
+  const q = Q[qi];
+  b.innerHTML = `<p class="src">Soal ${qi+1} dari ${Q.length}</p><h3 class="font-semibold">${q.q}</h3>${q.o.map((o,k)=>`<button class="opt" data-k="${k}">${o}</button>`).join('')}<div id="fb" class="mt-3"></div>`;
+  $$('#quiz .opt').forEach(btn => btn.onclick = () => {
+    const k = +btn.dataset.k; if (k===q.a) score++;
+    $$('#quiz .opt').forEach((x,j)=>{x.disabled=true;if(j===q.a)x.classList.add('ok');else if(j===k)x.classList.add('bad')});
+    $('#fb').innerHTML = `<p class="text-sm">${k===q.a?'✅ Tepat.':'❌ Belum tepat.'} ${q.e} ${q.l?`<a class="text-blue-600 underline" target="_blank" rel="noopener" href="${q.l}">Lihat sumber</a>`:''}</p><button class="btn mt-2" id="nx">${qi+1<Q.length?'Lanjut →':'Lihat Skor'}</button>`;
+    $('#nx').onclick = () => { qi++; showQ(); };
+  });
+}
+
+/* Cek Klaim dengan Data: checklist + penelusuran angka dasar */
+const CHK = ['Angka dasar: saya tahu nilai awal dan akhir, bukan hanya persentase','Sampel: jika survei, jumlah dan cara pemilihan responden jelas','Sumber asli dapat dibuka','Periode dan pembanding jelas','Definisi dan metode dijelaskan','Grafik/skala tidak menyesatkan','Saya tahu apa yang belum bisa disimpulkan'];
+function initFact(){
+  $('#f-i').innerHTML = opts(IN,i=>`<option value="${i.c}">${i.n}</option>`);
+  $('#f-c').innerHTML = opts(Object.keys(CT),k=>`<option value="${k}">${CT[k]}</option>`);
+  $('#f-chk').innerHTML = CHK.map(t=>`<label><input type="checkbox"> ${t}</label>`).join('');
+  const cnt = () => $('#f-n').textContent = `Checklist: ${$$('#f-chk input:checked').length} dari ${CHK.length} terpenuhi. Semakin sedikit, semakin hati-hati menyimpulkan.`; cnt();
+  const p = () => { const i=byC($('#f-i').value), k=$('#f-k').value, y=$('#f-y').value, v=$('#f-v').value;
+    $('#f-p').textContent = `Klaim: “${i.n} ${CT[$('#f-c').value]} ${{gt:'lebih tinggi dari '+v+' '+i.u+' pada tahun '+y,lt:'lebih rendah dari '+v+' '+i.u+' pada tahun '+y,up:'naik sejak tahun '+y,down:'turun sejak tahun '+y}[k]}.”`; };
+  $('#v-fact').addEventListener('input',()=>{p();cnt();}); p();
+  $('#f-go').onclick = checkFact;
+}
+function checkFact(){
+  const c=$('#f-i').value, iso=$('#f-c').value, k=$('#f-k').value, y=+$('#f-y').value, v=parseFloat($('#f-v').value), i=byC(c), s=ser(c,iso), val=DATA[c]?.[iso]?.[y], l=s.at(-1), f=s[0];
+  let st='🟡 Belum cukup bukti', cls='bg-amber-50', yes=[], no=['Penyebab perubahan atau hubungan sebab-akibat','Kondisi kelompok atau daerah di dalam wilayah ini (data berupa agregat)'];
+  if ($('#f-s').checked) no.unshift('Klaim penyebab: data ini hanya menunjukkan nilai dan tren.');
+  else if (k==='gt'||k==='lt'){
+    if (val==null||isNaN(v)) no.unshift(isNaN(v)?'Nilai pembanding belum diisi.':`Tidak ada data ${i.n} ${CT[iso]} untuk tahun ${y}.`);
+    else { const hit = k==='gt'?val>v:val<v; st = hit?'🟢 Didukung data ini':'🔴 Tidak didukung data ini'; cls = hit?'bg-green-50':'bg-red-50'; yes.push(`Nilai tercatat ${fmt(val,2)} ${i.u} (${y}); klaim membandingkan dengan ${v}.`); }
+  } else {
+    if (val==null||!l||l[0]<=y) no.unshift('Data pada tahun acuan atau tahun yang lebih baru tidak tersedia.');
+    else { const d=l[1]-val, hit = k==='up'?d>0:d<0; st = hit?'🟢 Didukung data ini':'🔴 Tidak didukung data ini'; cls = hit?'bg-green-50':'bg-red-50';
+      yes.push(`${fmt(val,2)} (${y}) → ${fmt(l[1],2)} (${l[0]}): ${chg(val,l[1],i.u)}.`);
+      if ((l[1]-f[1]>0)!==(d>0)) no.unshift(`Arah berbeda jika titik awal ${f[0]}: ${chg(f[1],l[1],i.u)}. Pilihan titik awal memengaruhi kesan.`);
+      no.push('Perubahan di antara dua titik tidak diketahui.'); }
+  }
+  const r=$('#f-r'); r.className=`rounded-xl p-3 text-sm ${cls}`;
+  r.innerHTML = `<p class="font-semibold">${st}</p><p class="mt-2 font-medium">Apa yang didukung data?</p><ul class="list-disc ml-5">${(yes.length?yes:['Belum ada yang dapat dipastikan dari data yang tersedia.']).map(x=>`<li>${x}</li>`).join('')}</ul><p class="mt-2 font-medium">Apa yang belum bisa disimpulkan?</p><ul class="list-disc ml-5">${no.map(x=>`<li>${x}</li>`).join('')}</ul>${ctx(c)}<p class="src mt-2">${src(c)}</p>`;
+}
+
+/* Kamus */
+const TERMS = [['Persentase','Bagian dari 100. Selalu cek dasar perhitungannya.'],['Poin persentase','Selisih dua persentase (misal 40% ke 50% = 10 poin).'],['Rata-rata (mean)','Jumlah nilai dibagi banyaknya nilai.'],['Median','Nilai tengah setelah data diurutkan.'],['Pencilan (outlier)','Nilai yang sangat jauh dari kebanyakan data.'],['Korelasi','Kecenderungan dua variabel bergerak bersama; bukan bukti sebab-akibat.'],['Tren','Arah perubahan data dalam periode tertentu.'],['Sampel','Sebagian anggota populasi yang diamati.'],['Estimasi','Angka perkiraan yang mengandung ketidakpastian.'],['Per kapita','Nilai dibagi jumlah penduduk.'],['Representatif','Sampel yang komposisinya mencerminkan populasi yang ingin disimpulkan.'],['Bias','Penyimpangan sistematis, misalnya karena cara memilih responden atau pertanyaan yang mengarahkan.'],['Margin of error','Rentang ketidakpastian hasil survei akibat pengambilan sampel.'],['Ketidakpastian','Keterbatasan kepastian angka akibat estimasi, data hilang, atau revisi.'],['Angka dasar','Jumlah awal/absolut di balik persentase.'],['Skala terpotong','Sumbu grafik yang tidak dimulai dari nol sehingga perbedaan tampak lebih besar.']];
+function renderGloss(){
+  const q = $('#g-q').value.toLowerCase(), all = TERMS.map(t=>({n:t[0],d:t[1],k:'Istilah statistik'})).concat(IN.map(i=>({n:i.n,d:`${i.d} Satuan: ${i.u}.`,k:'Indikator · '+i.t})));
+  const l = all.filter(t=>(t.n+t.d).toLowerCase().includes(q));
+  $('#g-l').innerHTML = l.length ? l.map(t=>`<div class="card"><b>${t.n}</b> <span class="chip">${t.k}</span><p class="text-sm mt-1">${t.d}</p></div>`).join('') : '<p class="text-sm">Istilah tidak ditemukan.</p>';
+}
+
+/* ---------- 5) NAVIGASI & MULAI ---------- */
+const R = {home:renderHome,explorer:renderList,compare:renderCompare,story:renderStories,learn:renderLearn,quiz:buildQuiz,fact:()=>{},gloss:renderGloss};
+let ready = false;
+function go(v){
+  $$('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
+  $$('.nav').forEach(x=>x.classList.toggle('on',x.dataset.v===v));
+  if (ready) R[v](); window.scrollTo({top:0});
+}
+$$('.nav').forEach(b => b.onclick = () => go(b.dataset.v));
+$('#g-q').addEventListener('input',renderGloss);
+initExplorer(); initCompare(); initFact();
+loadAll().then(o => { ready = o; if (o) go($('.nav.on').dataset.v); });
+</script>
+</body>
+</html>
